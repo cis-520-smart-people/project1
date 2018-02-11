@@ -24,6 +24,11 @@ typedef int tid_t;
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
 
+/* Thread niceness. */
+#define NICE_MIN -20                    /* Lowest niceness. */
+#define NICE_DEFAULT 0                  /* Default niceness. */
+#define NICE_MAX 20                     /* Highest niceness. */
+
 /* A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -93,6 +98,10 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
+    struct list locks;
+    int nice;                            /* Niceness. */
+    int recent_cpu;                      /* Recent CPU usage */
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -129,6 +138,13 @@ void thread_yield (void);
 /* Performs some operation on thread t, given auxiliary data AUX. */
 typedef void thread_action_func (struct thread *t, void *aux);
 void thread_foreach (thread_action_func *, void *);
+
+void thread_calc_priority (struct thread *thrd);
+void thread_calc_rec_cpu (struct thread *thrd);
+void thread_calc_load_avg (void);
+void thread_calc_recent_cpu_for_all (void);
+void thread_calc_priority_for_all (void);
+void sort_thread_list (struct list *l);
 
 int thread_get_priority (void);
 void thread_set_priority (int);
